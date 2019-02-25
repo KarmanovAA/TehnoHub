@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <cstdlib>
 #include <iostream>
 using namespace std;
 
@@ -8,19 +8,19 @@ private:
 	int *data_;
 	int size_;
 	double avg;
-	double Average() const; // Аналог Хэш-Функции, дешевый по памяти способ иметь контрольные данные
+	double Average() const; // РђРЅР°Р»РѕРі РҐСЌС€-Р¤СѓРЅРєС†РёРё, РґРµС€РµРІС‹Р№ РїРѕ РїР°РјСЏС‚Рё СЃРїРѕСЃРѕР± РёРјРµС‚СЊ РєРѕРЅС‚СЂРѕР»СЊРЅС‹Рµ РґР°РЅРЅС‹Рµ
 public:
-	Stack() :  data_(new int[1]), size_(0), avg(0) {};//конструктор по умолчанию
-	//Stack(int size);  конструктор на фиксированное число элементов
-	Stack(const Stack&);//копирующий конструктор 
+	Stack() :  data_(new int[1]), size_(0), avg(0) {};//РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+	//Stack(int size);  РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РЅР° С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕРµ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ
+	Stack(const Stack&);//РєРѕРїРёСЂСѓСЋС‰РёР№ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ 
 	~Stack() {
 		if (!Status())
 			abort();
-		delete[size_ + 1]data_;
-	};// деструктор
-	void Push(int elem); // добавить элемент
-	int Pop(); // убрать элемент
-	bool Status() const;// Проверить, все ли со стеком в порядке
+		delete[]data_;
+	};// РґРµСЃС‚СЂСѓРєС‚РѕСЂ
+	void Push(int elem); // РґРѕР±Р°РІРёС‚СЊ СЌР»РµРјРµРЅС‚
+	int Pop(); // СѓР±СЂР°С‚СЊ СЌР»РµРјРµРЅС‚
+	bool Status() const;// РџСЂРѕРІРµСЂРёС‚СЊ, РІСЃРµ Р»Рё СЃРѕ СЃС‚РµРєРѕРј РІ РїРѕСЂСЏРґРєРµ
 	void Dump() const;
 
 };
@@ -54,8 +54,7 @@ void Stack::Push(int elem) {
 	data_[size_] = elem;
 	++size_; 
 	avg = Average();
-	data_[size_] = *(new int);  // выделяем доп ячейку памяти, после послед элемента 
-	if (!Status())				// (По идее, защищает от доступа к чужой памяти)
+	if (!Status())	
 		abort();
 }
 
@@ -63,13 +62,11 @@ int Stack::Pop() {
 	if (size_ != 0) {
 		if (!Status())
 			abort();
-		int res = data_[size_ - 1];
-		delete (data_ + size_); // должен освобождать последнюю ячейку 
-		--size_;               // динамической памяти(следующую за последним элементом) Как сделать?????????????
+		--size_;
 		avg = Average();
 		if (!Status())
 			abort();
-		return res;
+		return data_[size_];
 	}
 	else
 		cerr << "Stack is empty" << endl;
@@ -114,17 +111,16 @@ double Stack::Average() const {
 }
 
 int main() {
-	int *data = new int[10];
-	for (int i = 0; i < 10; i++) {
-		data[i] = i;
-	}
-	for (int i = 0; i < 10; i++) {
-		cout << data[i] << endl;
-	}
-	data[10] = *(new int);
-	delete [] &data[10];
-	for (int i = 0; i < 11; i++) {
-		cout << data[i] << endl;
-	}
+	Stack s;
+	s.Push(1);
+	s.Push(2);
+	s.Push(3);
+	s.Push(4);
+	s.Push(5);
+	s.Dump();
+	s.Pop();
+	s.Pop();
+	s.Dump();
+
 	return 0;
 };
