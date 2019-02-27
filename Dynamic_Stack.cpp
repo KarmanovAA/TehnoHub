@@ -1,5 +1,5 @@
-#include "stdafx.h"
 #include <iostream>
+#include <cstdlib>
 using namespace std;
 
 
@@ -7,34 +7,24 @@ class Stack {
 private:
 	int *data_;
 	int size_;
-	double avg;
-	double Average() const; // Аналог Хэш-Функции, дешевый по памяти способ иметь контрольные данные
+	double avg; // last Average
+	double Average() const; // Hash-function, enough to track unwelcome changes
 public:
-	Stack() :  data_(new int[1]), size_(0), avg(0) {};//конструктор по умолчанию
-	//Stack(int size);  конструктор на фиксированное число элементов
-	Stack(const Stack&);//копирующий конструктор 
+	Stack() : data_(new int[0]), size_(0), avg(0) {};//default constructor
+	Stack(const Stack&);//Copying constructor
 	~Stack() {
 		if (!Status())
 			abort();
-		delete[size_ + 1]data_;
-	};// деструктор
-	void Push(int elem); // добавить элемент
-	int Pop(); // убрать элемент
-	bool Status() const;// Проверить, все ли со стеком в порядке
-	void Dump() const;
+		delete[]data_;
+		data_ = nullptr;
+	};
+	void Push(int elem); 
+	int Pop(); 
+	bool Status() const;// Check for faults
+	void Dump() const; 
 
 };
-/*
-Stack::Stack(int size) {
-	if (size > 0) {
-		size_ = 0;
-		avg = 0;
-		data_ = new int[size];
-	}
-	else
-		cerr << "Size must be greater than zero" << endl;
-}  
-*/
+
 Stack::Stack(const Stack& init) {
 	if (init.Status()) {
 		data_ = new int[init.size_ + 1];
@@ -51,11 +41,23 @@ Stack::Stack(const Stack& init) {
 void Stack::Push(int elem) {
 	if (!Status())
 		abort();
-	data_[size_] = elem;
-	++size_; 
-	avg = Average();
-	data_[size_] = *(new int);  // выделяем доп ячейку памяти, после послед элемента 
-	if (!Status())				// (По идее, защищает от доступа к чужой памяти)
+	if (size_ != 0) {
+		int* tmp = new int[size_];
+		for (int i = 0; i < size_; i++)
+			tmp[i] = data_[i]; //Moving data to temporary storage
+		//delete[] data_; Why cant i do this? Do I need it?
+		++size_;
+		data_ = new int[size_]; // Building stack with an up-to-date size
+		for (int i = 0; i < size_ - 1; i++)
+			data_[i] = tmp[i];
+		data_[size_ - 1] = elem; // pushback itself
+		avg = Average();
+	}
+	else {
+		++size_;
+		data_[0] = elem;
+	}
+	if (!Status())			
 		abort();
 }
 
@@ -63,13 +65,18 @@ int Stack::Pop() {
 	if (size_ != 0) {
 		if (!Status())
 			abort();
-		int res = data_[size_ - 1];
-		delete (data_ + size_); // должен освобождать последнюю ячейку 
-		--size_;               // динамической памяти(следующую за последним элементом) Как сделать?????????????
+		int* tmp = new int[size_];
+		for (int i = 0; i < size_; i++)
+			tmp[i] = data_[i]; // same as Push
+		//delete[] data_;
+		--size_;
+		data_ = new int[size_]; 
+		for (int i = 0; i < size_; i++)
+			data_[i] = tmp[i];
 		avg = Average();
 		if (!Status())
 			abort();
-		return res;
+		return tmp[size_]; // the Last element is still stored in temporary
 	}
 	else
 		cerr << "Stack is empty" << endl;
@@ -79,7 +86,7 @@ int Stack::Pop() {
 bool Stack::Status() const {
 	if (size_ < 0)
 	{
-		cerr << "wrong size" << endl;
+		cerr << "Wrong size" << endl;
 		return 0;
 	}
 	else
@@ -114,17 +121,15 @@ double Stack::Average() const {
 }
 
 int main() {
-	int *data = new int[10];
-	for (int i = 0; i < 10; i++) {
-		data[i] = i;
-	}
-	for (int i = 0; i < 10; i++) {
-		cout << data[i] << endl;
-	}
-	data[10] = *(new int);
-	delete [] &data[10];
-	for (int i = 0; i < 11; i++) {
-		cout << data[i] << endl;
-	}
+	Stack s;
+	for (int i = 0; i < 30; i++)
+		s.Push(i);
+	s.Dump();
+	s.Push(30);
+	cout << "----------------" << endl;
+	for (int i = 0; i < 20; i++)
+		s.Pop();
+	s.Dump();
+	system("pause");
 	return 0;
-};
+};	
