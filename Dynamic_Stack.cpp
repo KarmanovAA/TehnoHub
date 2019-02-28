@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <stdexcept>
 using namespace std;
 
 
@@ -13,20 +14,19 @@ public:
 	Stack() : data_(new int[0]), size_(0), avg(0) {};//default constructor
 	Stack(const Stack&);//Copying constructor
 	~Stack() {
-		if (!Status())
-			abort();
 		delete[]data_;
 		data_ = nullptr;
 	};
 	void Push(int elem); 
 	int Pop(); 
-	bool Status() const;// Check for faults
+	void Status() const;// Check for faults
 	void Dump() const; 
 
 };
 
 Stack::Stack(const Stack& init) {
-	if (init.Status()) {
+	try{
+		init.Status();
 		data_ = new int[init.size_ + 1];
 		size_ = init.size_;
 		for (int i = 0; i < init.size_; i++) {
@@ -34,17 +34,17 @@ Stack::Stack(const Stack& init) {
 		}
 		avg = Average();
 	}
-	else
-		cerr << "Invalid initial data " << endl;
+	catch (const exception& e) {
+		cout << e.what() << endl;
+	}
 }
 
 void Stack::Push(int elem) {
-	if (!Status())
-		abort();
-	if (size_ != 0) {
+	try {
+		Status();
 		int* tmp = new int[size_];
 		for (int i = 0; i < size_; i++)
-			tmp[i] = data_[i]; //Moving data to temporary storage
+		tmp[i] = data_[i]; //Moving data to temporary storage
 		//delete[] data_; Why cant i do this? Do I need it?
 		++size_;
 		data_ = new int[size_]; // Building stack with an up-to-date size
@@ -52,64 +52,55 @@ void Stack::Push(int elem) {
 			data_[i] = tmp[i];
 		data_[size_ - 1] = elem; // pushback itself
 		avg = Average();
+		Status();
+	} catch (const exception& e) {
+		cout << e.what() << endl;
 	}
-	else {
-		++size_;
-		data_[0] = elem;
-	}
-	if (!Status())			
-		abort();
 }
 
 int Stack::Pop() {
-	if (size_ != 0) {
-		if (!Status())
-			abort();
-		int* tmp = new int[size_];
-		for (int i = 0; i < size_; i++)
-			tmp[i] = data_[i]; // same as Push
-		//delete[] data_;
-		--size_;
-		data_ = new int[size_]; 
-		for (int i = 0; i < size_; i++)
-			data_[i] = tmp[i];
-		avg = Average();
-		if (!Status())
-			abort();
-		return tmp[size_]; // the Last element is still stored in temporary
+	try{
+		if (size_ != 0) {
+			Status();
+			int* tmp = new int[size_];
+			for (int i = 0; i < size_; i++)
+				tmp[i] = data_[i]; // same as Push
+			//delete[] data_;
+			--size_;
+			data_ = new int[size_]; 
+			for (int i = 0; i < size_; i++)
+				data_[i] = tmp[i];
+			avg = Average();
+			Status();
+			return tmp[size_]; // the Last element is still stored in temporary
+		}
+		else
+			throw logic_error("Stack is empty");
 	}
-	else
-		cerr << "Stack is empty" << endl;
+	catch (const exception& e) {
+		cout << e.what() << endl;
+	}
 	return 0;
 }
 
-bool Stack::Status() const {
+void Stack::Status() const {
 	if (size_ < 0)
-	{
-		cerr << "Wrong size" << endl;
-		return 0;
-	}
-	else
-		if (data_ == NULL)
-		{
-			cerr << "No database" << endl;
-			return 0;
-		}
-		else
-			if (avg != Average())
-			{
-				cerr << "Data intruded" << endl;
-				return 0;
-			}
-			else
-				return 1;
+		throw logic_error("Wrong size");
+	if (data_ == NULL)
+		throw logic_error("No database");
+	if (avg != Average())
+		throw logic_error("Data intruded");
 }
 
 void Stack::Dump() const {
-	if (!Status())
-		abort();
-	for (int i = 0; i < size_; i++)
-		cout << i << " : " << data_[i] << endl;
+	try {
+		Status();
+		for (int i = 0; i < size_; i++)
+			cout << i << " : " << data_[i] << endl;
+	}
+	catch (const exception& e) {
+		cout << e.what() << endl;
+	}
 }
 
 double Stack::Average() const {
@@ -127,8 +118,10 @@ int main() {
 	s.Dump();
 	s.Push(30);
 	cout << "----------------" << endl;
-	for (int i = 0; i < 20; i++)
+	for (int i = 0; i < 32; i++)
 		s.Pop();
+	s.Dump();
+	s.Push(5);
 	s.Dump();
 	system("pause");
 	return 0;
