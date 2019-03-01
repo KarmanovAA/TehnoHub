@@ -55,7 +55,7 @@ void Stack::Push(int elem) {
 			Status();
 		}
 		else
-		{
+		{ 							// Having relatively small stack
 			capacity_ *= 2;
 			int* tmp = new int[size_];
 			for (int i = 0; i < size_; i++)
@@ -69,7 +69,7 @@ void Stack::Push(int elem) {
 			Status();
 		}
 	}
-	else
+	else 								//Still free space reserved
 	{
 		Status();
 		data_[size_] = elem;
@@ -83,10 +83,10 @@ int Stack::Pop() {
 	if (size_ != 0) 
 	{
 		Status();
-		if (capacity_ < CriticalCapacity) // 
+		if (capacity_ < CriticalCapacity) // Same as Push
 		{
 			Status();
-			if (size_ < capacity_ / 2)
+			if (size_ < capacity_ / 2) //Lots of unused space 
 			{
 				capacity_ /= 2;
 				int *tmp = new int[size_];
@@ -98,13 +98,13 @@ int Stack::Pop() {
 					data_[i] = tmp[i];
 				hash_ = Hash_Function();
 				return tmp[size_];
-			}
+			}			// Not a lot of data free
 			--size_;
 			hash_ = Hash_Function();
 			Status();
 			return data_[size_];
 		}
-		else
+		else 						//Moving to bigger Stack
 		{
 			if (size_ < capacity_ - CriticalCapacity / 25)
 			{
@@ -129,8 +129,8 @@ int Stack::Pop() {
 	else
 	{
 		std::cerr << "Can`t Pop from empty stack" << std::endl;
+		return 0;
 	}
-	return 0;
 }
 
 void Stack::Status() const {
@@ -178,7 +178,6 @@ long Stack::Hash_Function() const{
 	for (int i = 0; i < size_; i++) {
 		result *= 2;
 		result += data_[i];
-
 	}
 	return result;
 }
