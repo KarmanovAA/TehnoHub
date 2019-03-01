@@ -1,17 +1,19 @@
 #include <iostream>
 #include <cstdlib>
 #include <stdexcept>
-using namespace std;
-
+using std::cin;
+using std::cout;
+#define CriticalCapacity 25000
 
 class Stack {
 private:
 	int *data_;
 	int size_;
-	double avg; // last Average
-	double Average() const; // Hash-function, enough to track unwelcome changes
+	long hash_;
+	int capacity_;
+	long Hash_Function() const; // Hash-function, enough to track unwelcome changes
 public:
-	Stack() : data_(new int[0]), size_(0), avg(0) {};//default constructor
+	Stack() : data_(new int[1]), size_(0), hash_(0), capacity_(1) {};//default constructor
 	Stack(const Stack&);//Copying constructor
 	~Stack() {
 		delete[]data_;
@@ -25,104 +27,171 @@ public:
 };
 
 Stack::Stack(const Stack& init) {
-	try{
 		init.Status();
 		data_ = new int[init.size_ + 1];
 		size_ = init.size_;
 		for (int i = 0; i < init.size_; i++) {
 			data_[i] = init.data_[i];
 		}
-		avg = Average();
-	}
-	catch (const exception& e) {
-		cout << e.what() << endl;
-	}
+		hash_ = Hash_Function();
 }
 
 void Stack::Push(int elem) {
-	try {
+	Status();
+	if(capacity_ == size_) // Reached the border
+	{
+		if (capacity_ >= CriticalCapacity)			  // Working on a big amount of data and trying 
+		{											 //to avoid overreserving of data
+			capacity_ += CriticalCapacity / 25;
+			int* tmp = new int[size_];
+			for (int i = 0; i < size_; i++)
+				tmp[i] = data_[i]; //Moving data to temporary storage
+			++size_;
+			data_ = new int[capacity_]; // Building stack with an up-to-date capacity
+			for (int i = 0; i < size_ - 1; i++)
+				data_[i] = tmp[i];
+			data_[size_ - 1] = elem; // pushback itself
+			hash_ = Hash_Function();
+			Status();
+		}
+		else
+		{
+			capacity_ *= 2;
+			int* tmp = new int[size_];
+			for (int i = 0; i < size_; i++)
+				tmp[i] = data_[i]; //Moving data to temporary storage
+			++size_;
+			data_ = new int[capacity_]; // Building stack with an up-to-date capacity
+			for (int i = 0; i < size_ - 1; i++)
+				data_[i] = tmp[i];
+			data_[size_ - 1] = elem; // pushback itself
+			hash_ = Hash_Function();
+			Status();
+		}
+	}
+	else
+	{
 		Status();
-		int* tmp = new int[size_];
-		for (int i = 0; i < size_; i++)
-		tmp[i] = data_[i]; //Moving data to temporary storage
-		//delete[] data_; Why cant i do this? Do I need it?
-		++size_;
-		data_ = new int[size_]; // Building stack with an up-to-date size
-		for (int i = 0; i < size_ - 1; i++)
-			data_[i] = tmp[i];
-		data_[size_ - 1] = elem; // pushback itself
-		avg = Average();
+		data_[size_] = elem;
+		size_++;
+		hash_ = Hash_Function();
 		Status();
-	} catch (const exception& e) {
-		cout << e.what() << endl;
 	}
 }
 
 int Stack::Pop() {
-	try{
-		if (size_ != 0) {
+	if (size_ != 0) 
+	{
+		Status();
+		if (capacity_ < CriticalCapacity) // 
+		{
 			Status();
-			int* tmp = new int[size_];
-			for (int i = 0; i < size_; i++)
-				tmp[i] = data_[i]; // same as Push
-			//delete[] data_;
+			if (size_ < capacity_ / 2)
+			{
+				capacity_ /= 2;
+				int *tmp = new int[size_];
+				for (int i = 0; i < size_; i++)
+					tmp[i] = data_[i];
+				--size_	;
+				data_ = new int[capacity_];
+				for (int i = 0; i < size_; i++)
+					data_[i] = tmp[i];
+				hash_ = Hash_Function();
+				return tmp[size_];
+			}
 			--size_;
-			data_ = new int[size_]; 
-			for (int i = 0; i < size_; i++)
-				data_[i] = tmp[i];
-			avg = Average();
+			hash_ = Hash_Function();
 			Status();
-			return tmp[size_]; // the Last element is still stored in temporary
+			return data_[size_];
 		}
 		else
-			throw logic_error("Stack is empty");
+		{
+			if (size_ < capacity_ - CriticalCapacity / 25)
+			{
+
+				capacity_ -= CriticalCapacity / 25;
+				int *tmp = new int[size_];
+				for (int i = 0; i < size_; i++)
+					tmp[i] = data_[i];
+				--size_;
+				data_ = new int[capacity_];
+				for (int i = 0; i < size_; i++)
+					data_[i] = tmp[i];
+				hash_ = Hash_Function();
+				return tmp[size_];
+			}
+			--size_;
+			hash_ = Hash_Function();
+			Status();
+			return data_[size_];
+		}
 	}
-	catch (const exception& e) {
-		cout << e.what() << endl;
+	else
+	{
+		std::cerr << "Can`t Pop from empty stack" << std::endl;
 	}
 	return 0;
 }
 
 void Stack::Status() const {
 	if (size_ < 0)
-		throw logic_error("Wrong size");
-	if (data_ == NULL)
-		throw logic_error("No database");
-	if (avg != Average())
-		throw logic_error("Data intruded");
+	{
+		std::cerr << "Wrong size" << std::endl;
+		abort();
+	}
+	else
+	{
+		if (data_ == nullptr)
+		{
+			std::cerr << "No database" << std::endl;
+			abort();
+		}
+		else
+		{
+			if (hash_ != Hash_Function()) 
+			{
+				std::cerr << "Data intruded" << std::endl;
+				for (int i = 0; i < size_; i++)
+					cout << i << " : " << data_[i] << std::endl;
+				abort();
+			}
+			else
+			{
+				if (capacity_ < size_) {
+					std::cerr << "Capacity is less than current size" << std::endl;
+					abort();
+				}
+			}
+		}
+	}
 }
 
 void Stack::Dump() const {
-	try {
-		Status();
-		for (int i = 0; i < size_; i++)
-			cout << i << " : " << data_[i] << endl;
-	}
-	catch (const exception& e) {
-		cout << e.what() << endl;
-	}
+	Status();
+	for (int i = 0; i < size_; i++)
+		cout << i << " : " << data_[i] << std::endl;
 }
 
-double Stack::Average() const {
-	double avg = 0;
+
+long Stack::Hash_Function() const{
+	long result = size_;
 	for (int i = 0; i < size_; i++) {
-		avg += static_cast<double>(data_[i]) / size_;
+		result *= 2;
+		result += data_[i];
+
 	}
-	return avg;
+	return result;
 }
+
 
 int main() {
 	Stack s;
-	for (int i = 0; i < 30; i++)
+	for (int i = 0; i < 10; i++) {
 		s.Push(i);
-	s.Dump();
-	s.Push(30);
-	cout << "----------------" << endl;
-	for (int i = 0; i < 32; i++)
-		s.Pop();
-	s.Dump();
-	s.Push(5);
-	s.Dump();
+	}
+	for (int i = 0; i < 11; i++) {
+		cout << s.Pop() << std::endl;
+	}
 	system("pause");
 	return 0;
 };	
