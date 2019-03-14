@@ -1,0 +1,155 @@
+#include <iostream>
+#include <cstdlib>
+
+using std::cin;
+using std::cout;
+using std::ostream;
+using std::istream;
+
+void ErrorReport(const std::string err) {
+	std::cerr << "An error occured." << std::endl << err << std::endl;
+	abort();
+}
+
+void ExtendCap(int *storage, int& CurCap) {
+	int* tmp = new int[CurCap];
+	for (int i = 0; i < CurCap; i++)
+		tmp[i] = storage[i];
+	CurCap *= 2;
+	storage = new int[CurCap];
+	for (int i = 0; i < CurCap / 2; i++)
+		storage[i] = tmp[i];
+}
+
+
+class Vector{
+private:
+	int		*data_;
+	int		 capacity_;
+	int		 size_;
+public:
+			       Vector		() : data_(nullptr), capacity_(0), size_(0){};
+				   Vector		(const int& cap);
+				   Vector		(const Vector& in);
+				   ~Vector		();
+		   void	   PushBack		(const int& elem);
+	const  Vector& operator=	(const Vector& rhs);
+		   int&	   at			(int& index);
+		   int&	   operator[]	(int index);
+	const  int&    operator[]	(int i) const;
+		   void    insert		(int i, int elem);
+		   void	   operator+=   (const Vector& rhs);
+		   Vector  operator+	(const Vector& rhs);
+	friend ostream& operator<<	(ostream& output, Vector rhs);
+		   void		swap		(Vector& rhs);
+};
+
+
+Vector::Vector(const int& cap) {
+	capacity_ = cap;
+	data_ = new int[capacity_];
+}
+
+Vector::Vector(const Vector& in) {
+	data_ = new int[in.capacity_];
+	capacity_ = in.capacity_;
+	size_ = in.size_;
+	for (int i = 0; i < size_; i++) {
+		data_[i] = in[i];
+	}
+}
+
+Vector::~Vector() {
+	delete[]data_;
+	data_ = nullptr;
+}
+
+void Vector::swap(Vector& rhs) {
+	std::swap(rhs.size_, size_);
+	std::swap(rhs.capacity_, capacity_);
+	std::swap(rhs.data_, data_);
+}
+
+void Vector::PushBack(const int& elem) {
+	if (size_ == 0 || capacity_ == 0) {
+		data_ = new int;
+		data_[0] = elem;
+		++capacity_;
+		++size_;
+	} 
+	else
+	{
+		if (size_ == capacity_) {
+			ExtendCap(data_, capacity_);
+		}
+		data_[size_] = elem;
+		++size_;
+	}
+}
+
+const Vector& Vector::operator= (const Vector& rhs) {
+	Vector copy(rhs);
+	swap(copy);
+	return *this;
+}
+
+
+int& Vector::at(int& i) {
+	if (i < size_)
+		return data_[i];
+	else 
+	{
+		ErrorReport("Requested element is out of range");
+	}
+}
+
+int& Vector::operator[](int i) {
+	return at(i);
+}
+
+const int& Vector::operator[](int i) const {
+	if (i < size_)
+		return data_[i];
+	else
+	{
+		ErrorReport("Requested element is out of range");
+	}
+}
+
+void Vector::insert(int i, int elem) {
+	(*this)[i] = elem;
+}
+
+void Vector::operator+=(const Vector& rhs) {
+	if (rhs.size_ == size_) {
+		for (int i = 0; i < size_; i++) {
+			data_[i] += rhs[i];
+		}
+	}
+	else
+	{
+		ErrorReport("Object sizes do not match");
+	}
+}
+
+Vector Vector::operator+(const Vector& rhs) {
+	Vector res = *this;
+	res += rhs;
+	return res;
+}
+
+ostream& operator<<(ostream& output, Vector rhs) {
+	for (int i = 0; i < rhs.size_; i++) {
+		output << i << " : " << rhs[i] << std::endl;
+	}
+	return output;
+}
+
+int main() {
+	Vector v;
+	v.PushBack(5);
+	v.insert(0, 9);
+	cout << v;
+	system("pause");
+	return 0;
+}
