@@ -3,7 +3,7 @@
 bool IsWithinBoundaries(double& x, double& y, double& boundleft,
 							double& boundright, double& boundtop, double& boundbottom) 
 {
-	if (x>=boundleft && x <=boundright && y <= boundtop && y>= boundbottom)
+	if (x>=boundleft && x <=boundright && y >= boundtop && y<= boundbottom)
 		return true;
 	return false;
 }
@@ -34,16 +34,17 @@ void MovSprite::SetActive(sf::Event& event) {
 	double y = event.mouseMove.y;
 	double boundleft = getPosition().x - width_ / 2;
 	double boundright = getPosition().x + width_ / 2;
-	double boundtop = getPosition().y + height_ / 2;
-	double boundbottom = getPosition().y - height_ / 2;
+	double boundtop = getPosition().y  - height_ / 2;
+	double boundbottom = getPosition().y + height_ / 2;
 
 	if (event.type == sf::Event::MouseButtonPressed) {
 		MouseStatus_ = true;
-		PressedX_ = event.mouseButton.y;
-		PressedY_ = event.mouseButton.x;
+		PressedX_ = event.mouseButton.x;
+		PressedY_ = event.mouseButton.y;
 	}
 	if (event.type == sf::Event::MouseButtonReleased)
 		MouseStatus_ = false;
+	
 	if (MouseStatus_ && event.type == sf::Event::MouseMoved && //Зажата ЛКМ и мышь двигается
 		IsWithinBoundaries(x, y, boundleft, boundright, boundtop, boundbottom) &&
 		IsWithinBoundaries(PressedX_, PressedY_, boundleft, boundright, boundtop, boundbottom))
@@ -54,24 +55,24 @@ void MovSprite::SetActive(sf::Event& event) {
 	}
 }
 
-//
+
 //int main() {
+//	sf::Texture tex;
+//	tex.loadFromFile("VelBar.png");
 //	sf::RenderWindow window(sf::VideoMode(1000, 1000), "my");
-//	
-//	sf::Texture texture;
-//	if (!texture.loadFromFile("Aster.png"))
-//		std::cerr << "Unable to open a texture file" << std::endl;
-//	MovSprite sprite(texture);
-//	sprite.Rescale(0.5, 0.5);
+//	MovSprite sl(tex, sf::IntRect(0, 0, 100, 100));
 //	while (window.isOpen()) {
 //		sf::Event event;
+//		//sl.SetActive(event, window);
 //		while (window.pollEvent(event)) {
-//			sprite.SetActive(event);
+//			sl.SetActive(event);
 //			window.clear();
-//			window.draw(sprite);
+//			window.draw(sl);
+//			//window.draw(sl.text);
 //			window.display();
 //			if (event.type == sf::Event::Closed)
 //				window.close();
 //		}
 //	}
-//} 
+//	return 0;
+//}
