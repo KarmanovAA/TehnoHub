@@ -53,6 +53,6 @@ export default function convertBytesToHuman(bytes) {
         default:
             suffix = "You have a damn great amount of storage, Boy";
     }
-    return bytes + " " + suffix;
+    return bytes.toFixed(2) + " " + suffix;
     }
 }
