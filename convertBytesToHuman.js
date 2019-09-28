@@ -13,15 +13,14 @@
  */
 
 export default function convertBytesToHuman(bytes) {
-  if(bytes < 0 || !Number(bytes)){
+  if (bytes < 0 || !Number(bytes)){
     
     return undefined;
 
   } else {
-
     let flag = 0;
 
-    while(bytes >=1024){
+    while (bytes >=1024){
         bytes /= 1024;
         flag++;
     }
